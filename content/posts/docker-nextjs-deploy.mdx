@@ -1,0 +1,118 @@
+---
+title: "实战：用 Docker 部署 Next.js 应用"
+date: "2026-05-28"
+description: "记录如何使用 Docker 容器化部署 Next.js 应用到生产环境，包括多阶段构建和 Nginx 反向代理配置"
+tags: [docker, nextjs, deployment, devops]
+---
+
+## 为什么选择 Docker 部署
+
+Docker 提供了环境一致性，确保应用在开发、测试和生产环境中的行为完全一致。对于 Next.js 应用，使用 Docker 部署有以下几个优势：
+
+- **环境隔离**：应用及其依赖打包在容器中，不受宿主机环境影响
+- **易于扩展**：配合 Kubernetes 等编排工具，可以轻松实现横向扩展
+- **快速回滚**：通过镜像版本管理，可以快速回滚到之前的版本
+
+## Dockerfile 多阶段构建
+
+```dockerfile
+# Stage 1: Dependencies
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+
+# Stage 2: Build
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+# Stage 3: Production
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+
+CMD ["node", "server.js"]
+```
+
+## Nginx 反向代理
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Docker Compose 编排
+
+```yaml
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certs:/etc/nginx/certs
+    depends_on:
+      - app
+```
+
+## 关键配置说明
+
+在 `next.config.ts` 中需要启用 standalone 输出模式：
+
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "standalone",
+};
+
+export default nextConfig;
+```
+
+`output: "standalone"` 会生成一个自包含的构建产物，包含所有必要的依赖，可以直接运行。
+
+## 总结
+
+使用 Docker 部署 Next.js 应用可以大大简化运维流程。通过多阶段构建减小镜像体积，配合 Nginx 反向代理实现生产级的部署方案。

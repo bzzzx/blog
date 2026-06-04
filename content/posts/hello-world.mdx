@@ -1,0 +1,81 @@
+---
+title: "Hello World: 欢迎来到我的技术博客"
+date: "2026-06-04"
+description: "第一篇博客文章，介绍这个博客的搭建过程和使用方法"
+tags: [blog, nextjs, tailwindcss, tutorial]
+---
+
+## 关于这个博客
+
+这是一个基于 **Next.js** 和 **Tailwind CSS** 构建的静态技术博客。所有文章使用 Markdown 编写，适合记录项目实现过程和技术细节。
+
+## 技术栈
+
+```typescript
+const stack = {
+  framework: "Next.js 16 (App Router)",
+  styling: "Tailwind CSS v4",
+  language: "TypeScript",
+  content: "Markdown / MDX",
+  deployment: "Vercel / Static Export",
+};
+```
+
+## 核心功能
+
+### 1. Markdown 内容管理
+
+所有博客文章存放在 `content/posts/` 目录下。每篇文章都是一个 `.md` 或 `.mdx` 文件，使用 frontmatter 定义元数据：
+
+```yaml
+---
+title: "文章标题"
+date: "2026-06-04"
+description: "文章描述"
+tags: [tag1, tag2]
+---
+```
+
+### 2. 标签分类
+
+文章支持标签（tags）分类，可以通过标签筛选相关文章。标签页面会自动生成所有标签的索引。
+
+### 3. 代码高亮
+
+技术博客当然需要好的代码展示。代码块使用 Tailwind Typography 的 prose 样式进行格式化。
+
+### 4. 响应式设计
+
+使用 Tailwind CSS 构建，在桌面端和移动端都有良好的阅读体验。
+
+## 项目结构
+
+```
+blog/
+├── app/                  # Next.js App Router 页面
+│   ├── layout.tsx        # 根布局
+│   ├── page.tsx          # 首页（文章列表）
+│   ├── posts/[slug]/     # 文章详情页
+│   ├── tags/             # 标签索引
+│   └── about/            # 关于页面
+├── components/           # 可复用组件
+│   ├── Header.tsx
+│   ├── Footer.tsx
+│   ├── PostCard.tsx
+│   └── MDXContent.tsx
+├── content/posts/        # 博客文章（Markdown）
+├── lib/posts.ts          # 文章解析工具
+└── public/               # 静态资源
+```
+
+## 后续计划
+
+- [ ] 添加 RSS 订阅
+- [ ] 添加搜索功能
+- [ ] 集成评论系统
+- [ ] 添加深色模式切换按钮
+- [ ] 支持更多代码高亮主题
+
+---
+
+感谢阅读！欢迎关注更多技术文章。
