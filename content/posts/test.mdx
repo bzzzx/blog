@@ -1,0 +1,30 @@
+---
+title: "test"
+date: "2026-06-04"
+category: 问题排查
+---
+
+
+## 标题
+
+## 标题
+
+### 标题
+![截图 2025-08-22 13-32-48](/images/1780584071665----2025-08-22-13-32-48.png)
+
+```python
+# 读取文本文件并统计单词频率
+from collections import Counter
+import re
+
+def word_frequency(filename):
+    with open(filename, 'r', encoding='utf-8') as file:
+        text = file.read().lower()
+        words = re.findall(r'\b\w+\b', text)
+        return Counter(words)
+
+# 使用示例
+# freq = word_frequency('sample.txt')
+# for word, count in freq.most_common(10):
+#     print(f'{word}: {count}')
+```
