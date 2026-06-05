@@ -151,6 +151,12 @@ export default function AdminPage() {
             文章管理
           </Link>
           <Link
+            href="/admin/categories"
+            className="rounded-lg px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          >
+            分类管理
+          </Link>
+          <Link
             href="/admin/posts/new"
             className="rounded-lg px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
           >

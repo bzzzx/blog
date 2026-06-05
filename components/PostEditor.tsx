@@ -6,15 +6,6 @@ import { marked } from "marked";
 
 const API = "/api/admin";
 
-export const CATEGORIES = [
-  "随想",
-  "代码版本更新",
-  "项目实现",
-  "技术教程",
-  "问题排查",
-  "工具分享",
-];
-
 interface PostData {
   slug: string;
   title: string;
@@ -327,6 +318,25 @@ export default function PostEditor({ editData }: { editData?: PostData }) {
   const [preview, setPreview] = useState(false);
   const [showImage, setShowImage] = useState(false);
   const [showCode, setShowCode] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  const token =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("admin_token") || ""
+      : "";
+
+  // Load categories from API
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API}/categories`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCategories(data);
+      })
+      .catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     if (editData) {
@@ -339,11 +349,6 @@ export default function PostEditor({ editData }: { editData?: PostData }) {
       setContent(editData.content || "");
     }
   }, [editData]);
-
-  const token =
-    typeof window !== "undefined"
-      ? sessionStorage.getItem("admin_token") || ""
-      : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -487,6 +492,7 @@ export default function PostEditor({ editData }: { editData?: PostData }) {
         <nav className="flex flex-col gap-2">
           <a href="/admin" className="rounded-lg px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">仪表盘</a>
           <a href="/admin/posts" className="rounded-lg px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">文章管理</a>
+          <a href="/admin/categories" className="rounded-lg px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">分类管理</a>
           <a href="/admin/posts/new" className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">+ 新建文章</a>
           <hr className="my-2 border-zinc-200 dark:border-zinc-700" />
           <a href="/" className="rounded-lg px-3 py-2 text-sm text-zinc-500">← 返回网站</a>
@@ -538,7 +544,7 @@ export default function PostEditor({ editData }: { editData?: PostData }) {
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
               >
                 <option value="">选择分类...</option>
-                {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
+                {categories.map((c) => (<option key={c} value={c}>{c}</option>))}
               </select>
             </div>
             <div>
