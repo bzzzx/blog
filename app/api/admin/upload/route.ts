@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { savePostFile } from "@/lib/github";
+import { saveBinaryFile } from "@/lib/github";
 
 /**
  * POST /api/admin/upload
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     // Extract base64 content (strip data:image/... prefix if present)
     const base64 = data.replace(/^data:image\/\w+;base64,/, "");
 
-    await savePostFile(filePath, base64, `Upload image: ${fullName}`);
+    await saveBinaryFile(filePath, base64, `Upload image: ${fullName}`);
 
     const url = `/images/${fullName}`;
 

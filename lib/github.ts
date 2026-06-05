@@ -1,8 +1,5 @@
 /**
  * GitHub API client for blog content management.
- * Uses GitHub REST API to read/write files in the repository.
- *
- * Required env var: GITHUB_PAT (Personal Access Token with repo scope)
  */
 
 const GITHUB_API = "https://api.github.com";
@@ -13,57 +10,49 @@ const POSTS_PATH = "content/posts";
 
 function getToken(): string {
   const token = process.env.GITHUB_PAT;
-  if (!token) {
-    throw new Error("GITHUB_PAT environment variable is not set");
-  }
+  if (!token) throw new Error("GITHUB_PAT environment variable is not set");
   return token;
 }
 
-const headers = () => ({
-  Authorization: `Bearer ${getToken()}`,
-  Accept: "application/vnd.github.v3+json",
-  "Content-Type": "application/json",
-});
+function authHeaders(): Record<string, string> {
+  return {
+    Authorization: `Bearer ${getToken()}`,
+    Accept: "application/vnd.github.v3+json",
+    "Content-Type": "application/json",
+  };
+}
 
 export interface GitHubFile {
   name: string;
   path: string;
   sha: string;
-  content: string; // base64 encoded
+  content: string;
 }
 
-/**
- * List all files in the posts directory.
- */
+/* ─── List / Read ─── */
+
 export async function listPosts(): Promise<
   { name: string; path: string; sha: string }[]
 > {
   const res = await fetch(
     `${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${POSTS_PATH}?ref=${BRANCH}`,
-    { headers: headers() }
+    { headers: authHeaders() }
   );
-
   if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-
   const files = (await res.json()) as GitHubFile[];
   return files
     .filter((f) => f.name.endsWith(".md") || f.name.endsWith(".mdx"))
     .map((f) => ({ name: f.name, path: f.path, sha: f.sha }));
 }
 
-/**
- * Get a single file's content (decoded from base64).
- */
 export async function getPostFile(
   filePath: string
 ): Promise<{ content: string; sha: string }> {
   const res = await fetch(
     `${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${BRANCH}`,
-    { headers: headers() }
+    { headers: authHeaders() }
   );
-
   if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-
   const data = (await res.json()) as GitHubFile;
   return {
     content: Buffer.from(data.content, "base64").toString("utf8"),
@@ -71,19 +60,17 @@ export async function getPostFile(
   };
 }
 
-/**
- * Create or update a file in the repository.
- * Commits directly to the configured branch.
- */
-export async function savePostFile(
+/* ─── Write ─── */
+
+async function putGitHubFile(
   filePath: string,
-  content: string,
+  base64Content: string,
   commitMessage: string,
   sha?: string
 ): Promise<void> {
   const body: Record<string, string> = {
     message: commitMessage,
-    content: Buffer.from(content, "utf8").toString("base64"),
+    content: base64Content,
     branch: BRANCH,
   };
   if (sha) body.sha = sha;
@@ -92,11 +79,10 @@ export async function savePostFile(
     `${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`,
     {
       method: "PUT",
-      headers: headers(),
+      headers: authHeaders(),
       body: JSON.stringify(body),
     }
   );
-
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`GitHub API error: ${res.status} - ${err}`);
@@ -104,8 +90,35 @@ export async function savePostFile(
 }
 
 /**
- * Delete a file from the repository.
+ * Save a text file (Markdown posts, etc.).
+ * Content is UTF-8 text — will be base64-encoded for the GitHub API.
  */
+export async function savePostFile(
+  filePath: string,
+  content: string,
+  commitMessage: string,
+  sha?: string
+): Promise<void> {
+  const encoded = Buffer.from(content, "utf8").toString("base64");
+  await putGitHubFile(filePath, encoded, commitMessage, sha);
+}
+
+/**
+ * Save a binary file (images, etc.).
+ * Data is already base64-encoded (without data URI prefix).
+ */
+export async function saveBinaryFile(
+  filePath: string,
+  base64Data: string,
+  commitMessage: string,
+  sha?: string
+): Promise<void> {
+  // Pass through directly — already base64
+  await putGitHubFile(filePath, base64Data, commitMessage, sha);
+}
+
+/* ─── Delete ─── */
+
 export async function deletePostFile(
   filePath: string,
   sha: string
@@ -114,15 +127,10 @@ export async function deletePostFile(
     `${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`,
     {
       method: "DELETE",
-      headers: headers(),
-      body: JSON.stringify({
-        message: `Delete ${filePath}`,
-        sha,
-        branch: BRANCH,
-      }),
+      headers: authHeaders(),
+      body: JSON.stringify({ message: `Delete ${filePath}`, sha, branch: BRANCH }),
     }
   );
-
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`GitHub API error: ${res.status} - ${err}`);
