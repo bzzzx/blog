@@ -19,7 +19,8 @@ export const metadata: Metadata = {
     template: "%s | DevBlog",
     default: "DevBlog",
   },
-  description: "A personal tech blog for documenting project implementations and technical details.",
+  description:
+    "A personal tech blog for documenting project implementations and technical details.",
 };
 
 export default function RootLayout({
@@ -29,10 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-white dark:bg-zinc-950">
+      <body className="flex min-h-full flex-col">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

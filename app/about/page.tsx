@@ -11,7 +11,7 @@ export default function AboutPage() {
       <h1 className="mb-8 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
         About
       </h1>
-      <div className="prose prose-zinc max-w-none dark:prose-invert">
+      <div className="leading-7 [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-1 [&_code]:rounded [&_code]:bg-[var(--accent-soft)] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-sm [&_code]:font-mono [&_code]:text-[var(--accent)] [&_pre]:mb-4 [&_pre]:rounded-xl [&_pre]:bg-[#0f0d1a] [&_pre]:p-4 [&_pre_code]:text-gray-100 [&_pre_code]:text-sm">
         <p>
           Welcome to DevBlog! This is a personal tech blog where I document my
           project implementations, technical explorations, and lessons learned

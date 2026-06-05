@@ -4,12 +4,22 @@ import matter from "gray-matter";
 
 const postsDirectory = path.join(process.cwd(), "content/posts");
 
+export const CATEGORIES = [
+  "随想",
+  "代码版本更新",
+  "项目实现",
+  "技术教程",
+  "问题排查",
+  "工具分享",
+] as const;
+
 export interface PostMeta {
   slug: string;
   title: string;
   date: string;
   description: string;
   tags: string[];
+  category: string;
 }
 
 export interface Post extends PostMeta {
@@ -40,6 +50,7 @@ export function getAllPosts(): PostMeta[] {
         date: data.date ? new Date(data.date).toISOString() : "",
         description: data.description || "",
         tags: data.tags || [],
+        category: data.category || "",
       };
     })
     .sort((a, b) => (a.date > b.date ? -1 : 1));
@@ -74,8 +85,37 @@ export function getPostBySlug(slug: string): Post | null {
     date: data.date ? new Date(data.date).toISOString() : "",
     description: data.description || "",
     tags: data.tags || [],
+    category: data.category || "",
     content,
   };
+}
+
+/**
+ * Get all unique categories with post counts.
+ */
+export function getAllCategories(): { category: string; count: number }[] {
+  const posts = getAllPosts();
+  const catMap = new Map<string, number>();
+
+  for (const post of posts) {
+    const cat = post.category || "未分类";
+    catMap.set(cat, (catMap.get(cat) || 0) + 1);
+  }
+
+  return Array.from(catMap.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
+}
+
+/**
+ * Get all posts in a specific category.
+ */
+export function getPostsByCategory(category: string): PostMeta[] {
+  const posts = getAllPosts();
+  if (!category || category === "未分类") {
+    return posts.filter((p) => !p.category);
+  }
+  return posts.filter((p) => p.category === category);
 }
 
 /**

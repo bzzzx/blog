@@ -1,12 +1,14 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800">
-      <div className="mx-auto max-w-3xl px-6 py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+    <footer className="border-t border-[var(--card-border)]">
+      <div className="mx-auto max-w-3xl px-6 py-8 text-center text-sm text-[var(--muted)]">
         <p>
           &copy; {new Date().getFullYear()} DevBlog &mdash; Built with{" "}
           <a
             href="https://nextjs.org"
-            className="underline underline-offset-4 hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="font-medium underline underline-offset-4 transition-colors hover:text-[var(--accent)]"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -15,12 +17,20 @@ export default function Footer() {
           &amp;{" "}
           <a
             href="https://tailwindcss.com"
-            className="underline underline-offset-4 hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="font-medium underline underline-offset-4 transition-colors hover:text-[var(--accent)]"
             target="_blank"
             rel="noopener noreferrer"
           >
             Tailwind CSS
           </a>
+        </p>
+        <p className="mt-2">
+          <Link
+            href="/admin"
+            className="transition-colors hover:text-[var(--accent)]"
+          >
+            管理
+          </Link>
         </p>
       </div>
     </footer>

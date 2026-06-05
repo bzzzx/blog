@@ -15,7 +15,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const decodedSlug = decodeURIComponent(slug);
+  const post = getPostBySlug(decodedSlug);
 
   if (!post) {
     return { title: "Not Found" };
@@ -45,7 +46,8 @@ function formatDate(isoString: string): string {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const decodedSlug = decodeURIComponent(slug);
+  const post = getPostBySlug(decodedSlug);
 
   if (!post) {
     notFound();
@@ -72,6 +74,14 @@ export default async function PostPage({ params }: Props) {
             >
               {formatDate(post.date)}
             </time>
+          )}
+          {post.category && (
+            <Link
+              href={`/categories/${encodeURIComponent(post.category)}`}
+              className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+            >
+              {post.category}
+            </Link>
           )}
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
